@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f4f1e8;
+  --color-sheet: #fffdf6;
+  --color-ink: #1e2936;
+  --color-ink-soft: #5b6672;
+  --color-line: #d8d2c2;
+  --color-accent: #e4571b;
+  --color-accent-deep: #b94312;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  --shadow-sheet: 0 1px 2px rgba(30, 41, 54, 0.06), 0 12px 32px -12px rgba(30, 41, 54, 0.18);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  /* papier milimetrowy: drobna siatka + mocniejsza linia co 4 kratki */
+  background-image:
+    linear-gradient(to right, rgba(30, 41, 54, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 41, 54, 0.07) 1px, transparent 1px),
+    linear-gradient(to right, rgba(30, 41, 54, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 41, 54, 0.035) 1px, transparent 1px);
+  background-size:
+    96px 96px,
+    96px 96px,
+    24px 24px,
+    24px 24px;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-sheet);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* kropkowany "leader" między nazwą pozycji a kwotą, jak w kosztorysie */
+.leader {
+  flex: 1;
+  min-width: 1.5rem;
+  margin: 0 0.4rem;
+  border-bottom: 2px dotted var(--color-line);
+  transform: translateY(-0.3em);
+}
+
+/* ząbkowana krawędź paragonu na dole arkusza */
+.receipt-edge {
+  position: relative;
+}
+.receipt-edge::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 9px;
+  background:
+    linear-gradient(-45deg, var(--color-sheet) 6px, transparent 0),
+    linear-gradient(45deg, var(--color-sheet) 6px, transparent 0);
+  background-repeat: repeat-x;
+  background-position: left top;
+  background-size: 18px 18px;
+  filter: drop-shadow(0 3px 2px rgba(30, 41, 54, 0.08));
+}
+
+/* znaczniki cięcia (crop marks) w rogach kart odpowiedzi */
+.cropmarks::before,
+.cropmarks::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.cropmarks::before {
+  top: 6px;
+  left: 6px;
+  border-top: 2px solid var(--color-accent);
+  border-left: 2px solid var(--color-accent);
+}
+.cropmarks::after {
+  bottom: 6px;
+  right: 6px;
+  border-bottom: 2px solid var(--color-accent);
+  border-right: 2px solid var(--color-accent);
+}
+.cropmarks:hover::before,
+.cropmarks:hover::after,
+.cropmarks[data-selected="true"]::before,
+.cropmarks[data-selected="true"]::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
