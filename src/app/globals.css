@@ -6,24 +6,32 @@
   --color-ink: #1e2936;
   --color-ink-soft: #5b6672;
   --color-line: #d8d2c2;
+  --color-mat: #1c2733;
+  /* pomarańcz marki do grafiki i dużych liter */
   --color-accent: #e4571b;
-  --color-accent-deep: #b94312;
+  /* ciemniejszy pomarańcz: tekst i przyciski z białym napisem (kontrast AA) */
+  --color-accent-ink: #c8460f;
+  --color-accent-deep: #a93a0c;
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
 
-  --shadow-sheet: 0 1px 2px rgba(30, 41, 54, 0.06), 0 12px 32px -12px rgba(30, 41, 54, 0.18);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --shadow-sheet: 0 1px 0 rgba(30, 41, 54, 0.08), 0 18px 40px -22px rgba(30, 41, 54, 0.35);
 }
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   background-color: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  /* papier milimetrowy: drobna siatka + mocniejsza linia co 4 kratki */
+  /* papier milimetrowy: kratka 6 mm i mocniejsza linia co 4 kratki */
   background-image:
     linear-gradient(to right, rgba(30, 41, 54, 0.07) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(30, 41, 54, 0.07) 1px, transparent 1px),
@@ -34,6 +42,7 @@ body {
     96px 96px,
     24px 24px,
     24px 24px;
+  background-position: center top;
 }
 
 ::selection {
@@ -41,15 +50,50 @@ body {
   color: var(--color-sheet);
 }
 
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-accent-ink);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+/* liternictwo tabliczki rysunkowej: szeroki krój do tytułów */
+.wide {
+  font-stretch: 112%;
+}
+.extra-wide {
+  font-stretch: 125%;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* etykiety jak opisy na rysunku: mono, wersaliki, umiarkowana spacja */
+.label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
 }
 
 /* kropkowany "leader" między nazwą pozycji a kwotą, jak w kosztorysie */
 .leader {
   flex: 1;
-  min-width: 1.5rem;
-  margin: 0 0.4rem;
+  min-width: 1rem;
+  margin: 0 0.45rem;
   border-bottom: 2px dotted var(--color-line);
   transform: translateY(-0.3em);
 }
@@ -74,38 +118,173 @@ body {
   filter: drop-shadow(0 3px 2px rgba(30, 41, 54, 0.08));
 }
 
-/* znaczniki cięcia (crop marks) w rogach kart odpowiedzi */
-.cropmarks::before,
-.cropmarks::after {
-  content: "";
+/* ------------------------------------------------------------------ makieta */
+
+.makieta {
+  container-type: inline-size;
+}
+
+/* podgląd opcji: ten sam render, wyblakły jak szkic ołówkiem */
+.makieta-ghost {
+  filter: grayscale(1) contrast(0.9) brightness(1.15);
+}
+
+/* odnośnik (balonik) z numerem pozycji, jak na rysunku złożeniowym */
+.callout {
   position: absolute;
-  width: 10px;
-  height: 10px;
+  width: 0;
+  height: 0;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 150ms ease;
+  --leader: clamp(16px, 4.4cqw, 40px);
+  --balloon: clamp(19px, 3.3cqw, 30px);
 }
-.cropmarks::before {
-  top: 6px;
-  left: 6px;
-  border-top: 2px solid var(--color-accent);
-  border-left: 2px solid var(--color-accent);
+.callout-dot {
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-sheet);
+  box-shadow: 0 0 0 1.5px var(--color-ink);
 }
-.cropmarks::after {
-  bottom: 6px;
-  right: 6px;
-  border-bottom: 2px solid var(--color-accent);
-  border-right: 2px solid var(--color-accent);
+.callout-leader {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1.5px;
+  height: var(--leader);
+  background: var(--color-sheet);
+  transform-origin: bottom center;
+  transform: rotate(35deg);
+  box-shadow: 0 0 0 0.5px rgba(30, 41, 54, 0.35);
 }
-.cropmarks:hover::before,
-.cropmarks:hover::after,
-.cropmarks[data-selected="true"]::before,
-.cropmarks[data-selected="true"]::after {
-  opacity: 1;
+.callout-balloon {
+  position: absolute;
+  left: calc(var(--leader) * 0.574 - var(--balloon) / 2);
+  top: calc(var(--leader) * -0.819 - var(--balloon) + 2px);
+  width: var(--balloon);
+  height: var(--balloon);
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-sheet);
+  border: 1.5px solid var(--color-ink);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: clamp(10px, 1.45cqw, 13px);
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 6px rgba(12, 18, 26, 0.35);
+}
+
+/* numer pozycji w kosztorysie: ten sam balonik co na makiecie */
+.balloon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* świeżo dopisana pozycja: marker przeciągnięty pod tekstem, potem blednie */
+@keyframes marker-fade {
+  0% {
+    background-size: 0% 100%;
+    opacity: 1;
+  }
+  35% {
+    background-size: 100% 100%;
+    opacity: 1;
+  }
+  100% {
+    background-size: 100% 100%;
+    opacity: 0;
+  }
+}
+.marker {
+  position: absolute;
+  inset: 1px 0;
+  pointer-events: none;
+  background-image: linear-gradient(rgba(228, 87, 27, 0.16), rgba(228, 87, 27, 0.16));
+  background-repeat: no-repeat;
+  animation: marker-fade 1.8s var(--ease-out) forwards;
+}
+
+/* klawisz skrótu przy opcji */
+.keycap {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border: 1px solid var(--color-line);
+  border-bottom-width: 2px;
+  background: var(--color-sheet);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+}
+
+/* przycisk główny: wciśnięcie czuć pod palcem */
+.press {
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+.press:active {
+  transform: scale(0.97);
+}
+
+/* wejście ekranu startowego w CSS: działa jeszcze przed hydratacją */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes slip-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotate(0deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-1.2deg);
+  }
+}
+.rise {
+  animation: rise 0.6s var(--ease-out) both;
+}
+.slip {
+  transform: rotate(-1.2deg);
+  animation: slip-in 0.6s var(--ease-out) 1.6s both;
+}
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .rise,
+  .slip {
+    animation: none;
+  }
   html {
     scroll-behavior: auto;
+  }
+  .marker {
+    animation: none;
+    opacity: 0;
+  }
+  .press:active {
+    transform: none;
   }
 }
