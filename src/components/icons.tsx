@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /**
- * Ikony opcji w stylu rysunku technicznego — sama kreska, bez wypełnień.
+ * Ikony opcji w stylu rysunku technicznego: sama kreska, bez wypełnień.
  */
 
 const PATHS: Record<string, ReactNode> = {

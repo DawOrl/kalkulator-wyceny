@@ -20,6 +20,8 @@ export interface LineItem {
   /** adnotacja techniczna, np. "×1,45" */
   detail?: string;
   amount: number;
+  /** warstwa makiety, którą ta pozycja dokłada (public/makieta/<layer>.webp) */
+  layer: string;
 }
 
 export interface Estimate {
@@ -51,7 +53,7 @@ function docIdFor(a: Answers): string {
 }
 
 /**
- * Buduje kosztorys z częściowych odpowiedzi — pozycje pojawiają się
+ * Buduje kosztorys z częściowych odpowiedzi: pozycje pojawiają się
  * w arkuszu na żywo, w miarę przechodzenia przez kroki.
  */
 export function buildEstimate(a: Answers): Estimate {
@@ -64,6 +66,7 @@ export function buildEstimate(a: Answers): Estimate {
       label: optionLabel("siteType", a.siteType),
       detail: "stawka bazowa",
       amount: base,
+      layer: `type-${a.siteType}`,
     });
   }
 
@@ -75,6 +78,7 @@ export function buildEstimate(a: Answers): Estimate {
         label: optionLabel("pages", a.pages),
         detail: `×${mult.toLocaleString("pl-PL")}`,
         amount: Math.round(base * (mult - 1)),
+        layer: `pages-${a.pages}`,
       });
     }
   }
@@ -85,6 +89,7 @@ export function buildEstimate(a: Answers): Estimate {
       label: "Projekt indywidualny",
       detail: `+${CUSTOM_DESIGN_RATE * 100}%`,
       amount: Math.round(base * CUSTOM_DESIGN_RATE),
+      layer: "design",
     });
   }
 
@@ -93,6 +98,7 @@ export function buildEstimate(a: Answers): Estimate {
       id: "content",
       label: "Copywriting treści",
       amount: COPYWRITING_PRICE,
+      layer: "content",
     });
   }
 
@@ -101,6 +107,7 @@ export function buildEstimate(a: Answers): Estimate {
       id: `extra-${extra}`,
       label: optionLabel("extras", extra),
       amount: EXTRA_PRICE[extra],
+      layer: `extra-${extra}`,
     });
   }
 
@@ -112,6 +119,7 @@ export function buildEstimate(a: Answers): Estimate {
       label: "Tryb ekspres",
       detail: `×${EXPRESS_MULTIPLIER.toLocaleString("pl-PL")}`,
       amount: Math.round(subtotal * (EXPRESS_MULTIPLIER - 1)),
+      layer: "express",
     });
   }
 
@@ -137,6 +145,21 @@ export function buildEstimate(a: Answers): Estimate {
   };
 }
 
+/*
+ * Polska norma nie grupuje liczb czterocyfrowych ("2490"), ale w kosztorysie
+ * kwoty mają się równać w kolumnie, więc grupujemy zawsze ("2 490").
+ * Separator i spacja przed "zł" są nierozdzielające.
+ */
+const PLN = new Intl.NumberFormat("pl-PL", { useGrouping: "always", maximumFractionDigits: 0 });
+
+export function formatNumber(value: number): string {
+  return PLN.format(value);
+}
+
 export function formatPLN(value: number): string {
-  return `${value.toLocaleString("pl-PL")} zł`;
+  return `${PLN.format(value)}\u00a0zł`;
+}
+
+export function formatWeeks(min: number, max: number): string {
+  return min === max ? `ok. ${max} tyg.` : `${min}–${max} tyg.`;
 }

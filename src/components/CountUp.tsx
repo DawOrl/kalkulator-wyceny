@@ -10,7 +10,7 @@ interface CountUpProps {
   className?: string;
 }
 
-/** Licznik tykający jak taksometr — animuje od poprzedniej wartości. */
+/** Licznik tykający jak taksometr: animuje od poprzedniej wartości. */
 export function CountUp({
   value,
   format = (n) => n.toLocaleString("pl-PL"),

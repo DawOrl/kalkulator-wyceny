@@ -1,5 +1,5 @@
 /**
- * Cennik bazowy i mnożniki kalkulatora — wszystkie liczby do kalibracji
+ * Cennik bazowy i mnożniki kalkulatora: wszystkie liczby do kalibracji
  * znajdują się w tym jednym pliku.
  */
 
@@ -209,7 +209,7 @@ export const STEPS: StepDef[] = [
     key: "extras",
     no: "05",
     title: "Funkcje dodatkowe",
-    subtitle: "Zaznacz wszystko, co się przyda — albo pomiń ten krok.",
+    subtitle: "Zaznacz wszystko, co się przyda, albo pomiń ten krok.",
     multi: true,
     options: [
       { id: "blog", label: "Blog / aktualności", description: "System wpisów z panelem.", hint: "+700 zł" },
