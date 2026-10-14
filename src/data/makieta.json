@@ -1,0 +1,94 @@
+{
+  "width": 1800,
+  "height": 1004,
+  "order": [
+    "base",
+    "pages-p2_5",
+    "pages-p6_10",
+    "pages-p10plus",
+    "type-wizytowka",
+    "type-landing",
+    "type-firmowa",
+    "type-sklep",
+    "type-webapp",
+    "extra-blog",
+    "extra-jezyki",
+    "extra-rezerwacje",
+    "extra-platnosci",
+    "extra-integracje",
+    "design",
+    "extra-animacje",
+    "content",
+    "express"
+  ],
+  "anchors": {
+    "pages-p2_5": [
+      0.4119,
+      0.2274
+    ],
+    "pages-p6_10": [
+      0.4022,
+      0.1002
+    ],
+    "pages-p10plus": [
+      0.4022,
+      0.1002
+    ],
+    "type-wizytowka": [
+      0.5261,
+      0.4175
+    ],
+    "type-landing": [
+      0.543,
+      0.1624
+    ],
+    "type-firmowa": [
+      0.5357,
+      0.2766
+    ],
+    "type-sklep": [
+      0.5192,
+      0.3735
+    ],
+    "type-webapp": [
+      0.5219,
+      0.3804
+    ],
+    "extra-blog": [
+      0.7289,
+      0.4599
+    ],
+    "extra-jezyki": [
+      0.792,
+      0.4239
+    ],
+    "extra-rezerwacje": [
+      0.6686,
+      0.5801
+    ],
+    "extra-platnosci": [
+      0.7786,
+      0.6295
+    ],
+    "extra-integracje": [
+      0.6446,
+      0.7251
+    ],
+    "design": [
+      0.4374,
+      0.4967
+    ],
+    "extra-animacje": [
+      0.5556,
+      0.5811
+    ],
+    "content": [
+      0.2318,
+      0.3522
+    ],
+    "express": [
+      0.8812,
+      0.0979
+    ]
+  }
+}
