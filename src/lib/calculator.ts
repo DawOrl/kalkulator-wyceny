@@ -102,7 +102,8 @@ export function buildEstimate(a: Answers): Estimate {
     });
   }
 
-  for (const extra of a.extras) {
+  const extras = [...new Set(a.extras)];
+  for (const extra of extras) {
     lines.push({
       id: `extra-${extra}`,
       label: optionLabel("extras", extra),
@@ -128,7 +129,7 @@ export function buildEstimate(a: Answers): Estimate {
   let [weeksMin, weeksMax] = a.siteType ? BASE_WEEKS[a.siteType] : [0, 0];
   if (a.design === "indywidualny") weeksMax += 1;
   if (a.content === "copywriting") weeksMax += 1;
-  for (const extra of a.extras) weeksMax += EXTRA_WEEKS[extra] ?? 0;
+  for (const extra of extras) weeksMax += EXTRA_WEEKS[extra] ?? 0;
   if (a.deadline === "ekspres") {
     weeksMin = Math.max(1, Math.round(weeksMin * EXPRESS_WEEKS_FACTOR));
     weeksMax = Math.max(weeksMin, Math.round(weeksMax * EXPRESS_WEEKS_FACTOR));

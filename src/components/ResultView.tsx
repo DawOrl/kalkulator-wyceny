@@ -27,10 +27,6 @@ function chosenLabels(answers: Answers, stepIndex: number): string {
   return labels.length ? labels.join(", ") : "Bez dodatków";
 }
 
-function summaryText(answers: Answers): string {
-  return STEPS.map((step, i) => `${step.title}: ${chosenLabels(answers, i)}`).join("\n");
-}
-
 const NEXT_STEPS = [
   {
     title: "Wysyłasz konfigurację",
@@ -192,7 +188,7 @@ export function ResultView({ answers, onRestart, onEdit }: ResultViewProps) {
               ))}
             </ol>
           </div>
-          <ContactForm docId={estimate.docId} summary={`${estimate.docId}\n${summaryText(answers)}`} />
+          <ContactForm docId={estimate.docId} />
         </div>
       </article>
 

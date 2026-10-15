@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { Answers, ExtraId, StepKey } from "@/data/pricing";
 import { STEPS, emptyAnswers } from "@/data/pricing";
@@ -106,6 +114,28 @@ const stepVariants = {
 
 const PLAN_SIZES = "(min-width: 1360px) 700px, (min-width: 1024px) 52vw, 100vw";
 
+/**
+ * Pytanie bieżącego kroku. Fokus przechodzi na nie w chwili zamontowania,
+ * czyli dopiero gdy stary krok zniknie (AnimatePresence mode="wait"): czytnik
+ * odczyta pytanie, a skróty klawiszowe działają dalej, bo fokus jest w kreatorze.
+ */
+function StepHeading({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    ref.current?.focus({ preventScroll: true });
+  }, []);
+  return (
+    <h2
+      ref={ref}
+      id="pytanie"
+      tabIndex={-1}
+      className="wide text-[1.85rem] font-bold leading-[1.02] tracking-[-0.03em] outline-none sm:text-[2.5rem]"
+    >
+      {children}
+    </h2>
+  );
+}
+
 function makietaLabel(lines: { label: string }[]): string {
   if (lines.length === 0) return "Makieta projektu: pusta mata, czeka na pierwszą odpowiedź.";
   return `Makieta projektu: ${lines.map((l) => l.label).join(", ")}.`;
@@ -115,8 +145,8 @@ export function Wizard() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const reduceMotion = useReducedMotion();
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const wizardRef = useRef<HTMLElement>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   // podgląd przypięty do kroku: po zmianie kroku sam wygasa
   const [hover, setHover] = useState<{ step: number; preview: MakietaPreview } | null>(null);
@@ -192,7 +222,11 @@ export function Wizard() {
     }
   }, [phase, answers]);
 
-  /* skróty: Enter = dalej, litery = wybór opcji, strzałki = wejście w listę */
+  /*
+   * Skróty: Enter = dalej, litery = wybór opcji, strzałki = wejście w listę.
+   * W krokach działają tylko przy fokusie wewnątrz kreatora (WCAG 2.1.4),
+   * więc litery wpisywane gdzie indziej niczego nie wybierają.
+   */
   useEffect(() => {
     function onKeyDown(e: globalThis.KeyboardEvent) {
       if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -209,6 +243,7 @@ export function Wizard() {
         return;
       }
       if (phase !== "steps" || sheetOpen) return;
+      if (!target || !wizardRef.current?.contains(target)) return;
 
       if (e.key.length === 1 && /[a-z]/i.test(e.key)) {
         const index = e.key.toUpperCase().charCodeAt(0) - 65;
@@ -235,11 +270,6 @@ export function Wizard() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [phase, step, answers, answered, next, selectOption, sheetOpen]);
-
-  /* fokus na pytaniu przy zmianie kroku (czytnik ekranu odczyta pytanie) */
-  useEffect(() => {
-    if (phase === "steps") headingRef.current?.focus({ preventScroll: true });
-  }, [phase, stepIndex]);
 
   /* nowy krok zaczyna się od góry: na telefonie widać, jak element ląduje na makiecie */
   useEffect(() => {
@@ -384,7 +414,10 @@ export function Wizard() {
   const complete = isComplete(answers);
 
   return (
-    <section className="mx-auto grid w-full max-w-[1360px] grid-cols-1 content-start gap-x-12 px-4 pb-32 pt-5 sm:px-6 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:grid-rows-[auto_1fr] lg:pb-14 lg:pt-9">
+    <section
+      ref={wizardRef}
+      aria-label="Kreator wyceny"
+      className="mx-auto grid w-full max-w-[1360px] grid-cols-1 content-start gap-x-12 px-4 pb-32 pt-5 sm:px-6 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:grid-rows-[auto_1fr] lg:pb-14 lg:pt-9">
       {/* linijka postępu */}
       <nav aria-label="Postęp wyceny" className="order-1 lg:col-start-1 lg:row-start-1">
         <div className="flex items-baseline justify-between gap-4">
@@ -476,14 +509,7 @@ export function Wizard() {
             transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
             className="pt-5 lg:pt-8"
           >
-            <h2
-              ref={headingRef}
-              id="pytanie"
-              tabIndex={-1}
-              className="wide text-[1.85rem] font-bold leading-[1.02] tracking-[-0.03em] outline-none sm:text-[2.5rem]"
-            >
-              {step.title}
-            </h2>
+            <StepHeading>{step.title}</StepHeading>
             <p className="mt-2 max-w-[52ch] text-[15px] text-ink-soft sm:text-base">{step.subtitle}</p>
 
             <div

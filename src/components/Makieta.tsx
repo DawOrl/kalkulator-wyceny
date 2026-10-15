@@ -103,7 +103,10 @@ export function Makieta({
         ))}
       </AnimatePresence>
 
-      {/* pobranie z wyprzedzeniem: wybór opcji nie czeka na sieć */}
+      {/*
+        Pobranie z wyprzedzeniem tylko w krokach: warstwy opcji bieżącego pytania,
+        żeby wybór nie czekał na sieć. Priorytet ma wyłącznie podstawa (eager).
+      */}
       {prefetch
         .filter((l) => !shown.has(l))
         .map((l) => (
@@ -192,7 +195,6 @@ function Layer({
         alt=""
         fill
         sizes={sizes}
-        loading="eager"
         onLoad={() => setReady(true)}
         className="object-contain"
         draggable={false}

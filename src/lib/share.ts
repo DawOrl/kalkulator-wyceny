@@ -36,9 +36,10 @@ export function decodeAnswers(search: string): Answers | null {
   const params = new URLSearchParams(search);
   if (!params.has("t")) return null;
 
-  const extras = (params.get("x") ?? "")
-    .split(",")
-    .filter((id) => validId("extras", id)) as ExtraId[];
+  // tylko znane dodatki, każdy raz: link z "x=blog,blog" nie może zawyżyć wyceny
+  const extras = [
+    ...new Set((params.get("x") ?? "").split(",").filter((id) => validId("extras", id))),
+  ] as ExtraId[];
 
   const answers: Answers = {
     ...emptyAnswers,

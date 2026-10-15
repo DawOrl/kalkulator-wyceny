@@ -6,8 +6,6 @@ import { motion, useReducedMotion } from "framer-motion";
 interface ContactFormProps {
   /** numer dokumentu wyceny */
   docId: string;
-  /** podsumowanie konfiguracji dołączane do "wysyłki" */
-  summary: string;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -15,7 +13,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const fieldClass =
   "mt-1.5 min-h-12 w-full border-2 bg-sheet px-3 text-[16px] outline-none transition-colors placeholder:text-ink-soft/70 focus:border-accent-ink";
 
-export function ContactForm({ docId, summary }: ContactFormProps) {
+export function ContactForm({ docId }: ContactFormProps) {
   const reduceMotion = useReducedMotion();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -34,8 +32,8 @@ export function ContactForm({ docId, summary }: ContactFormProps) {
     }
 
     setStatus("sending");
-    // Demo: mock wysyłki bez backendu; w produkcji konfiguracja trafiłaby do CRM albo na maila.
-    console.info("[demo] wysyłka wyceny:", { email, phone, summary });
+    // Demo: wysyłka jest symulowana, nic nie opuszcza przeglądarki i nic nie trafia do logów.
+    // W produkcji konfiguracja z numerem dokumentu trafiłaby do CRM albo na maila.
     await new Promise((r) => setTimeout(r, 900));
     setStatus("sent");
   }

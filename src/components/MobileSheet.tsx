@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { createPortal } from "react-dom";
+import { motion, useIsPresent, useReducedMotion } from "framer-motion";
 
 interface MobileSheetProps {
   title: string;
@@ -11,29 +12,60 @@ interface MobileSheetProps {
   children: ReactNode;
 }
 
-/** Szuflada od dołu ekranu: tło przyciemnia stronę, Esc i stuknięcie w tło zamykają. */
+const DESKTOP = "(min-width: 1024px)";
+
+/**
+ * Szuflada od dołu ekranu (tylko poniżej lg). Renderowana w <body>, a reszta
+ * strony dostaje `inert`, więc Tab nie ucieka do kroków za tłem. Esc, tło
+ * i przycisk zamykają; powiększenie okna do desktopu też ją zamyka.
+ */
 export function MobileSheet({ title, meta, onClose, children }: MobileSheetProps) {
   const reduceMotion = useReducedMotion();
+  const isPresent = useIsPresent();
+  const rootRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    // przy animacji zamykania strona od razu wraca do życia
+    if (!isPresent) return;
+    const root = rootRef.current;
     const opener = document.activeElement as HTMLElement | null;
-    closeRef.current?.focus({ preventScroll: true });
+
+    const others = Array.from(document.body.children).filter(
+      (el): el is HTMLElement => el instanceof HTMLElement && el !== root,
+    );
+    const wasInert = others.map((el) => el.inert);
+    others.forEach((el) => {
+      el.inert = true;
+    });
     const { overflow } = document.body.style;
     document.body.style.overflow = "hidden";
+    closeRef.current?.focus({ preventScroll: true });
+
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
+    const desktop = window.matchMedia(DESKTOP);
+    function onResize(e: MediaQueryListEvent) {
+      if (e.matches) onClose();
+    }
     window.addEventListener("keydown", onKey);
+    desktop.addEventListener("change", onResize);
+    if (desktop.matches) onClose();
+
     return () => {
       window.removeEventListener("keydown", onKey);
+      desktop.removeEventListener("change", onResize);
+      others.forEach((el, i) => {
+        el.inert = wasInert[i];
+      });
       document.body.style.overflow = overflow;
       opener?.focus({ preventScroll: true });
     };
-  }, [onClose]);
+  }, [isPresent, onClose]);
 
-  return (
-    <div className="fixed inset-0 z-40 lg:hidden">
+  return createPortal(
+    <div ref={rootRef} className="fixed inset-0 z-40 lg:hidden">
       <motion.button
         type="button"
         aria-label="Zamknij kosztorys"
@@ -71,6 +103,7 @@ export function MobileSheet({ title, meta, onClose, children }: MobileSheetProps
         </div>
         {children}
       </motion.div>
-    </div>
+    </div>,
+    document.body,
   );
 }
